@@ -1,12 +1,19 @@
 package com.gcit.lms;
 
+import java.net.UnknownHostException;
+
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
+
+import com.gcit.lms.dao.SequenceDAO;
+import com.mongodb.MongoClient;
 import com.gcit.lms.dao.AuthorDAO;
 import com.gcit.lms.dao.BookCopyDAO;
 import com.gcit.lms.dao.BookDAO;
@@ -26,6 +33,10 @@ public class LMSConfig {
 	public String username = "root";
 	public String password = "root";
 	
+	//================================================================================
+    // Setting up the JDBC Connection
+    //================================================================================
+	
 	@Bean
 	//@Scope(value="Prototype")
 	public BasicDataSource dataSource(){
@@ -44,18 +55,31 @@ public class LMSConfig {
 	}
 	
 	@Bean
-	public AdminService adminService(){
-		return new AdminService();
+	public PlatformTransactionManager txManager(){
+		return new DataSourceTransactionManager(dataSource());
+	}
+	
+	//================================================================================
+    // Setting up the MongoDb Connection
+    //================================================================================
+	
+	@Bean
+	public SimpleMongoDbFactory mongoDbFactory() throws UnknownHostException{
+		return new SimpleMongoDbFactory(new MongoClient(), "local");
 	}
 	
 	@Bean
-	public BorrowerService borrowerService(){
-		return new BorrowerService();
+	public MongoTemplate mongoTemplate() throws UnknownHostException{
+		return new MongoTemplate(mongoDbFactory());
 	}
 	
+	//================================================================================
+    // Below are all the injected resources (entities + services)
+    //================================================================================
+	
 	@Bean
-	public LibrarianService librarianService(){
-		return new LibrarianService();
+	public SequenceDAO sDao(){
+		return new SequenceDAO();
 	}
 	
 	@Bean
@@ -99,8 +123,18 @@ public class LMSConfig {
 	}
 	
 	@Bean
-	public PlatformTransactionManager txManager(){
-		return new DataSourceTransactionManager(dataSource());
+	public AdminService adminService(){
+		return new AdminService();
+	}
+	
+	@Bean
+	public BorrowerService borrowerService(){
+		return new BorrowerService();
+	}
+	
+	@Bean
+	public LibrarianService librarianService(){
+		return new LibrarianService();
 	}
 }
  

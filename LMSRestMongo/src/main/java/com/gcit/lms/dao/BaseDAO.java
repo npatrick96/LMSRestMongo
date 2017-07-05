@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public abstract class BaseDAO { // TEST
@@ -16,6 +17,12 @@ public abstract class BaseDAO { // TEST
 	@Autowired
 	@Qualifier(value="MySQL")
 	JdbcTemplate template; // JdbcTemplate MySQL is also another way of specifying.
+	
+	@Autowired
+	MongoTemplate mongoTemplate;
+	
+	@Autowired
+	SequenceDAO sdao;
 
 	private Integer pageNo = 0;
 	private Integer pageSize = 10;

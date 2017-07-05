@@ -7,6 +7,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -16,10 +19,20 @@ import com.gcit.lms.entity.Author;
 import com.mysql.jdbc.Statement;
 
 public class AuthorDAO extends BaseDAO implements ResultSetExtractor<List<Author>>{
+	
+	
+	//private static final String AUTH_COLLECTION = "Authors";
+	final String AUTH_COLLECTION = "Authors";
 
-	public void addAuthor(Author author) throws SQLException{
-		template.update("insert into tbl_author(authorName) values (?)", new Object[] {author.getAuthorName()});
+	public void addAuthor(Author author) throws SQLException {
+		author.setAuthorId((int)sdao.getNextSequenceId(AUTH_COLLECTION));
+		//System.out.println("sth is happening");
+		mongoTemplate.save(author);
 	}
+
+//	public void addAuthor(Author author) throws SQLException{
+//		template.update("insert into tbl_author(authorName) values (?)", new Object[] {author.getAuthorName()});
+//	}
 	
 	public void addAuthorBook(Author author, Integer bookId) throws SQLException{
 		template.update("insert ignore into tbl_book_authors(bookId, authorId) values (?, ?)", new Object[] {bookId, author.getAuthorId()});
@@ -40,9 +53,20 @@ public class AuthorDAO extends BaseDAO implements ResultSetExtractor<List<Author
 		return holder.getKey().intValue();
 	}
 	
-	public void updateAuthor(Author author) throws SQLException{
-		template.update("update tbl_author set authorName =? where authorId = ?", new Object[] {author.getAuthorName(), author.getAuthorId()});
+	public void updateAuthor(Author author) throws SQLException {
+		//mongoTemplate.save(author);
+		Query query = new Query();
+		query.addCriteria(Criteria.where("authorId").is(author.getAuthorId()));
+		
+		Update update = new Update();
+		update.set("authorName", author.getAuthorName());
+		
+		mongoTemplate.updateFirst(query, update, AUTH_COLLECTION);
 	}
+	
+//	public void updateAuthor(Author author) throws SQLException{
+//		template.update("update tbl_author set authorName =? where authorId = ?", new Object[] {author.getAuthorName(), author.getAuthorId()});
+//	}
 	
 	public void deleteAuthor(Author author) throws SQLException{
 		template.update("delete from tbl_author where authorId = ?", new Object[] {author.getAuthorId()});

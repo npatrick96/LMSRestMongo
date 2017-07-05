@@ -3,6 +3,9 @@ package com.gcit.lms.entity;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection="Books")  // to tell Spring that this is a mongoDb document
 public class Book implements Serializable{
 	
 	/**
